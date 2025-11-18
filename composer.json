@@ -1,6 +1,6 @@
 {
-    "name": "davidmclaurel/tarefa2-php-ifpr-oop",
-    "description": "adaptação do trabalho construido de forma procedural para orientado a objetos",
+    "name": "davidmclaurel/php-audit-mfa-system",
+    "description": "Um sistema de gerenciamento de usuários usando uma arquitetura Orientada a Objetos (OOP) em PHP, com funcionalidades de autenticação multifator (MFA) para aumentar a segurança.",
     "version": "1.0.0",
     "autoload": {
         "psr-4": {
@@ -10,7 +10,7 @@
     "authors": [
         {
             "name": "davidtav",
-            "email": "david.mclaurel@outlook.com.br"
+            "email":"dav1d.dev@proton.me"
         }
     ],
     "require": {
