@@ -8,6 +8,12 @@ $message = "";
 $userManager = new UserManager();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {        
+        http_response_code(403); 
+        die('Erro de Segurança: Falha na verificação CSRF.');
+    }
+    
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     $validator = new Validator();
     
     $validation = $validator->make($_POST, [

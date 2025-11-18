@@ -1,4 +1,12 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (empty($_SESSION['csrf_token'])) {    
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); 
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 include __DIR__ . '/../src/Requisicao.php';
 ?>
@@ -20,6 +28,7 @@ include __DIR__ . '/../src/Requisicao.php';
             <?php endif; ?>
 
             <form action="" method="POST" id="userForm">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                 <label>Nome:</label>
                 <input type="text" name="nome" required>
 
