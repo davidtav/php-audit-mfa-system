@@ -1,0 +1,18 @@
+# 1. Dependências do Composer (são baixadas com 'composer install')
+/vendor/
+
+# 2. Variáveis de Ambiente (NUNCA suba o .env real)
+.env
+
+# 3. Dados Sensíveis (Json de usuários, logs, auth)
+/data/*.json
+/data/*.log
+/data/.htaccess
+
+# 4. Scripts de Instalação (Sua pergunta: Sim, vamos ignorar o setup)
+/public/setup.php
+
+# 5. Arquivos de Sistema/IDE
+.DS_Store
+.idea/
+.vscode/
