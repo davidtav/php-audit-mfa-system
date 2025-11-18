@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\AuditLogger;
@@ -7,60 +8,217 @@ use App\AuthManager;
 $auth = new AuthManager();
 $auth->checkAuth();
 
-
 $logger = new AuditLogger();
-$logs = $logger->getLogs();
-?>
 
+// Parâmetros de filtro (opcional)
+$filtroAcao = $_GET['acao'] ?? null;
+$filtroUsuario = $_GET['usuario'] ?? null;
+$limite = (int)($_GET['limite'] ?? 100);
+
+// Lê os logs com filtros
+$logs = $logger->readLogs($limite, $filtroAcao, $filtroUsuario);
+
+// Estatísticas
+$stats = $logger->getStats();
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logs de Auditoria do Sistema</title>
     <link rel="stylesheet" href="style_dashboard.css">
+    <style>
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+        }
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .filter-bar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
 </head>
 <body>
 
 <div class="log-container">
     <h1>🛡️ Monitor de Auditoria (Forense)</h1>
-    <p>Rastreamento de atividades em tempo real.</p>
+    <p>Rastreamento de atividades em tempo real - Timezone: America/Sao_Paulo</p>
 
+    <!-- Estatísticas -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3><?= number_format($stats['total']) ?></h3>
+            <p>Total de Eventos</p>
+        </div>
+        <div class="stat-card success">
+            <h3><?= number_format($stats['logins_sucesso']) ?></h3>
+            <p>Logins Bem-Sucedidos</p>
+        </div>
+        <div class="stat-card danger">
+            <h3><?= number_format($stats['logins_falhou']) ?></h3>
+            <p>Tentativas Falhadas</p>
+        </div>
+        <div class="stat-card">
+            <h3><?= number_format($stats['logout']) ?></h3>
+            <p>Logouts</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar">
+        <form method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <label>Ação:</label>
+            <select name="acao" id="filtroAcao">
+                <option value="">Todas</option>
+                <option value="LOGIN_SUCESSO" <?= $filtroAcao === 'LOGIN_SUCESSO' ? 'selected' : '' ?>>Login Sucesso</option>
+                <option value="LOGIN_FALHOU" <?= $filtroAcao === 'LOGIN_FALHOU' ? 'selected' : '' ?>>Login Falhou</option>
+                <option value="LOGOUT_SUCESSO" <?= $filtroAcao === 'LOGOUT_SUCESSO' ? 'selected' : '' ?>>Logout</option>
+            </select>
+
+            <label>Usuário:</label>
+            <input type="text" name="usuario" id="filtroUsuario" value="<?= htmlspecialchars($filtroUsuario ?? '') ?>" placeholder="Filtrar por usuário">
+
+            <label>Limite:</label>
+            <input type="number" name="limite" id="filtroLimite" value="<?= $limite ?>" min="10" max="1000" style="width: 80px;">
+
+            <button type="submit" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                🔍 Filtrar
+            </button>
+            <a href="admin_logs.php" style="padding: 8px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">
+                🔄 Limpar
+            </a>
+            
+            <?php if ($filtroAcao || $filtroUsuario || $limite != 100): ?>
+                <span style="margin-left: 10px; color: #28a745; font-weight: bold;">
+                    ✓ Filtro ativo
+                </span>
+            <?php endif; ?>
+        </form>
+    </div>
+
+    <!-- Tabela de Logs -->
     <?php if (empty($logs)): ?>
-        <div class="empty-log">Nenhum registro de atividade encontrado.</div>
+        <div class="empty-log" style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+            📭 Nenhum registro de atividade encontrado.
+        </div>
     <?php else: ?>
-        <table>
+        <p style="color: #666; margin-bottom: 10px;">
+            Exibindo <?= count($logs) ?> registro(s) mais recente(s)
+        </p>
+        <table style="width: 100%; border-collapse: collapse;">
             <thead>
-                <tr>
-                    <th width="15%">Data/Hora</th>
-                    <th width="10%">IP Origem</th>
-                    <th width="15%">Ação</th>
-                    <th width="30%">User Agent</th>
-                    <th width="30%">Detalhes (JSON)</th>
+                <tr style="background: #343a40; color: white;">
+                    <th style="padding: 12px; text-align: left;" width="15%">Data/Hora</th>
+                    <th style="padding: 12px; text-align: left;" width="10%">IP Origem</th>
+                    <th style="padding: 12px; text-align: left;" width="12%">Ação</th>
+                    <th style="padding: 12px; text-align: left;" width="10%">Usuário</th>
+                    <th style="padding: 12px; text-align: left;" width="28%">User Agent</th>
+                    <th style="padding: 12px; text-align: left;" width="25%">Detalhes</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($logs as $entry): ?>
-                <tr>
-                    <td><?= $entry['timestamp'] ?></td>
-                    
-                    <td class="ip-addr">
-                        <?= $entry['ip_origem'] === '::1' ? 'Localhost' : htmlspecialchars($entry['ip_origem']) ?>
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 10px; font-family: monospace; font-size: 0.9em;">
+                        <?= htmlspecialchars($entry['data_hora'] ?? $entry['timestamp']) ?>
                     </td>
                     
-                    <td>
-                        <span class="badge badge-create"><?= htmlspecialchars($entry['acao']) ?></span>
+                    <td style="padding: 10px;" class="ip-addr">
+                        <?php
+                        $ip = $entry['ip'] ?? 'N/A';
+                        echo $ip === '::1' ? '<span style="color: #28a745;">Localhost</span>' : htmlspecialchars($ip);
+                        ?>
                     </td>
                     
-                    <td title="<?= htmlspecialchars($entry['user_agent']) ?>">
-                        <?= htmlspecialchars(substr($entry['user_agent'], 0, 50)) ?>...
+                    <td style="padding: 10px;">
+                        <?php
+                        $acao = $entry['acao'] ?? 'DESCONHECIDO';
+                        $badgeClass = match($acao) {
+                            'LOGIN_SUCESSO' => 'badge-success',
+                            'LOGIN_FALHOU' => 'badge-danger',
+                            'LOGOUT_SUCESSO' => 'badge-info',
+                            default => 'badge-warning'
+                        };
+                        ?>
+                        <span class="badge <?= $badgeClass ?>">
+                            <?= htmlspecialchars($acao) ?>
+                        </span>
+                    </td>
+
+                    <td style="padding: 10px; font-weight: bold;">
+                        <?= htmlspecialchars($entry['usuario_sessao'] ?? $entry['detalhes']['usuario_alvo'] ?? 'N/A') ?>
                     </td>
                     
-                    <td>
-                        <div class="detail-box">
+                    <td style="padding: 10px; font-size: 0.85em; color: #666;" 
+                        title="<?= htmlspecialchars($entry['user_agent'] ?? '') ?>">
+                        <?= htmlspecialchars(substr($entry['user_agent'] ?? 'N/A', 0, 50)) ?>...
+                    </td>
+                    
+                    <td style="padding: 10px;">
+                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 0.85em;">
                             <?php 
+                            if (!empty($entry['detalhes'])) {
                                 foreach ($entry['detalhes'] as $chave => $valor) {
-                                    echo "<strong>$chave:</strong> " . htmlspecialchars($valor) . "<br>";
+                                    echo "<strong>" . htmlspecialchars($chave) . ":</strong> " 
+                                       . htmlspecialchars($valor) . "<br>";
                                 }
+                            } else {
+                                echo '<em style="color: #999;">Sem detalhes</em>';
+                            }
                             ?>
                         </div>
                     </td>
@@ -69,9 +227,13 @@ $logs = $logger->getLogs();
             </tbody>
         </table>
     <?php endif; ?>
+
+    <div style="text-align: right; margin-top: 20px;">
+        <a href="logout.php" style="color: #ff6b6b; text-decoration: none; font-weight: bold;">
+            🚪 Sair do Sistema
+        </a>
+    </div>
 </div>
-<div style="text-align: right; margin-bottom: 20px;">
-    <a href="logout.php" style="color: #ff6b6b; text-decoration: none;">[ Sair do Sistema ]</a>
-</div>
+
 </body>
 </html>
