@@ -15,7 +15,7 @@ O foco deste projeto vai além do CRUD básico: é um estudo prático de **Engen
 
 ## 🚀 Stack Tecnológica
 
-O projeto utiliza práticas modernas de desenvolvimento PHP (PSR-4) e bibliotecas robustas de segurança.
+O projeto utiliza práticas modernas de desenvolvimento PHP (PSR-4) e bibliotecas de segurança.
 
 | Componente | Tecnologia | Função |
 | :--- | :--- | :--- |
@@ -33,8 +33,9 @@ O projeto utiliza práticas modernas de desenvolvimento PHP (PSR-4) e biblioteca
 As funcionalidades foram desenhadas pensando em princípios de **Secure by Design**:
 
 - 🛡️ **Autenticação MFA:** Login administrativo protegido por senha (hash) + Token TOTP (Google Authenticator).
-- 🕵️ **Logs de Auditoria Forense:** Registro detalhado de atividades (`audit.log`) contendo **IP**, **User-Agent**, **Timestamp** e Ação realizada.
+- 🕵️ **Logs de Auditoria Forense:** Registro detalhado de atividades (`audit.log`) contendo **IP**, **User-Agent**, **Timestamp** e Ação realizada. O AuditLogger foi integrado ao AuthManager para registrar todas as tentativas de login (SUCESSO/FALHA), IP e User-Agent, facilitando a identificação de ataques de força bruta ou enumeração de usuários.
 - 🆔 **UUIDs Seguros:** Substituição de IDs sequenciais (`1, 2, 3`) por UUIDs v4 (`e4ea...`) para evitar enumeração de usuários.
+- 🕵️ **Proteção contra CSRF:** Estrutura pronta para a implementação de Tokens Anti-CSRF em formulários
 - 🔒 **Proteção de Dados:** Bloqueio de acesso direto à pasta `/data` via `.htaccess`.
 - 🔐 **Variáveis de Ambiente:** Credenciais sensíveis gerenciadas via `.env` (fora do código fonte).
 
@@ -85,7 +86,7 @@ cp .env.example .env
 php -S localhost:8000 -t public
 ```
 2. Acesse o script de configuração única no navegador: 👉 http://localhost:8000/setup.php
-3. Escaneie o QR Code com seu aplicativo autenticador (Google Authenticator, Authy, Microsoft Auth).
+3. Escaneie o QR Code com seu aplicativo autenticador (O QR Code é gerado via JavaScript (Client-Side) para garantir que o segredo MFA nunca seja enviado a um servidor externo.).
 4. ⚠️ IMPORTANTE: Após configurar, apague o arquivo public/setup.php ou certifique-se de que ele está bloqueado, pois ele reseta as credenciais.
 
 ---
