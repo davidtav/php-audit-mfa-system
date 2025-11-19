@@ -2,18 +2,33 @@
 namespace App;
 require_once __DIR__ . '/../vendor/autoload.php'; 
 use App\UserManager;
+use App\AuditLogger; 
 use Rakit\Validation\Validator; 
 
 $message = "";
 $userManager = new UserManager();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {        
-        http_response_code(403); 
-        die('Erro de Segurança: Falha na verificação CSRF.');
-    }
-    
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+     if (!isset($_POST['csrf_token']) || 
+        !isset($_SESSION['csrf_token']) || 
+        !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']) 
+    ) {
+        // A. Registro Forense do Incidente
+        $logger = new AuditLogger();
+        $logger->log('ALERTA_SEGURANCA_CSRF', [
+            'motivo' => 'Token inválido ou ausente na tentativa de Cadastro',
+            'ip_atacante' => $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN',
+            'dados_suspeitos' => $_POST['email'] ?? 'N/A' 
+        ]);
+
+        // B. Bloqueio Imediato
+        http_response_code(403);
+        die('Erro de Segurança: O formulário de cadastro foi bloqueado. Token inválido.');
+    }   
+   
+    unset($_SESSION['csrf_token']);   
+   
     $validator = new Validator();
     
     $validation = $validator->make($_POST, [
