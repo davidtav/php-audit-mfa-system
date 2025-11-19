@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>Senha</label>
             <input type="password" name="pass" required>
             
-            <label>Código MFA (Google Auth)</label>
+            <label>Código MFA</label>
             <input type="text" name="code" placeholder="000 000" pattern="\d*" inputmode="numeric" autocomplete="one-time-code" required>
             
             <button type="submit">Entrar</button>
