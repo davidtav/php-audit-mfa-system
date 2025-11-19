@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\AuthManager;
 use App\AuditLogger;
+use App\RateLimiter;
 
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -18,8 +19,17 @@ if (empty($_SESSION['csrf_token'])) {
 
 $erro = '';
 
+$limiter = new RateLimiter();
+$check = $limiter->check();
+
+if ($check['status'] === 'BLOQUEADO') {
+    $min = ceil($check['timeLeft'] / 60);
+    $erro = "Muitas tentativas falhas. Acesso bloqueado por mais $min minutos.";
+}
+
+
 // 4. Processamento do Formulário
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $check['status'] === 'OK') {
     if (
         !isset($_POST['csrf_token']) ||
         !isset($_SESSION['csrf_token']) ||
@@ -45,13 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code = $_POST['code'] ?? ''; // O código do Authenticator
 
     if ($auth->login($user, $pass, $code)) {
-
+        $limiter->resetAttempts();
         unset($_SESSION['csrf_token']);
-
         header('Location: admin_logs.php');
         exit;
     } else {
-        $erro = "Credenciais inválidas ou código MFA incorreto.";
+        $limiter->recordFailure();
+        $erro = "Credenciais inválidas ou código MFA incorreto. Tentativas restantes: " . ($limiter->maxAttempts - ($check['tentativas'] + 1));
     }
 }
 ?>

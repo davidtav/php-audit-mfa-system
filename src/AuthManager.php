@@ -16,54 +16,59 @@ class AuthManager
         $this->authFile = __DIR__ . '/../data/auth.json';
         $this->gAuth = new Google2FA();
 
-        // Inicia a sessão se ainda não estiver iniciada
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
+    /**
+     * Tenta autenticar o usuário. Não faz logging de falhas; apenas retorna true/false.
+     * O logging e o Rate Limiting são feitos pelo Controller chamador (login.php).
+     */
     public function login(string $user, string $password, string $code): bool
     {
         $accounts = $this->getAccounts();
         $logger = new AuditLogger();
 
-        // 1. Verifica se o usuário existe
+
         if (!isset($accounts[$user])) {
-            $logger->log('LOGIN_FALHOU', ['usuario_alvo' => $user, 'motivo' => 'USUARIO_INEXISTENTE']);
+
             return false;
         }
 
         $account = $accounts[$user];
 
-        // 2. Verifica a senha (Hash seguro)
+
         if (!password_verify($password, $account['password_hash'])) {
-            $logger->log('LOGIN_FALHOU', ['usuario_alvo' => $user, 'motivo' => 'SENHA_INVALIDA']);
+
             return false;
         }
 
-        // 3. Verifica o código MFA (TOTP)
-        // O código é válido por 30 segundos. A biblioteca verifica o atual e o anterior para evitar delays.
         if (!$this->gAuth->verifyKey($account['mfa_secret'], $code)) {
-            $logger->log('LOGIN_FALHOU', ['usuario_alvo' => $user, 'motivo' => 'MFA_INVALIDO']);
+
             return false;
         }
 
-        // 4. Login Sucesso: Regenera ID da sessão (Proteção contra Session Fixation)
+
         session_regenerate_id(true);
         $_SESSION['admin_user'] = $user;
         $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
         $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+
+
         $logger->log('LOGIN_SUCESSO', ['usuario_alvo' => $user]);
+
         return true;
     }
 
     public function checkAuth(): void
     {
-        // Verifica se está logado E se o IP/UserAgent batem (Proteção contra roubo de sessão)
+
         if (
             !isset($_SESSION['admin_user']) ||
-            $_SESSION['ip'] !== ($_SERVER['REMOTE_ADDR'] ?? '') ||
-            $_SESSION['user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? null)
+            ($_SESSION['ip'] ?? null) !== ($_SERVER['REMOTE_ADDR'] ?? null) ||
+            ($_SESSION['user_agent'] ?? null) !== ($_SERVER['HTTP_USER_AGENT'] ?? null)
         ) {
 
             $this->logout();
@@ -82,15 +87,15 @@ class AuthManager
         session_destroy();
     }
 
-    // Método auxiliar para criar o usuário inicial (usaremos no setup)
+
     public function createAdmin(string $user, string $password): array
     {
-        // Gera um segredo único para o 2FA
+
         $secret = $this->gAuth->generateSecretKey();
 
         $data = [
             $user => [
-                'password_hash' => password_hash($password, PASSWORD_DEFAULT), // Bcrypt ou Argon2 automático
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                 'mfa_secret' => $secret
             ]
         ];
