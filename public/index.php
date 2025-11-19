@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ .'/config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,8 +7,6 @@ if (session_status() === PHP_SESSION_NONE) {
 if (empty($_SESSION['csrf_token'])) {    
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); 
 }
-
-require_once __DIR__ . '/../vendor/autoload.php';
 include __DIR__ . '/../src/Requisicao.php';
 ?>
 
@@ -18,7 +15,7 @@ include __DIR__ . '/../src/Requisicao.php';
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Usuários</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
     <div class="main-container">
