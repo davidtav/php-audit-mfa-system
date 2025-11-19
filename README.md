@@ -83,7 +83,7 @@ cp .env.example .env
 ## 🚀 4. Setup Inicial (MFA)
 1. Inicie o servidor PHP apontando para a pasta pública:
 ```bash
-php -S localhost:8000 -t public
+php -S localhost:8000 index.php
 ```
 2. Acesse o script de configuração única no navegador: 👉 http://localhost:8000/setup.php
 3. Escaneie o QR Code com seu aplicativo autenticador (O QR Code é gerado via JavaScript (Client-Side) para garantir que o segredo MFA nunca seja enviado a um servidor externo.).
