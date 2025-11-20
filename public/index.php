@@ -15,7 +15,7 @@ include __DIR__ . '/../src/Requisicao.php';
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Usuários</title>
-    <link rel="stylesheet" href="/public/style.css">
+    <link rel="stylesheet" href="<?= $basePath ?>/public/style.css">
 </head>
 <body>
     <div class="main-container">
@@ -49,7 +49,7 @@ include __DIR__ . '/../src/Requisicao.php';
             <?php include __DIR__ . '/../src/table.php'; ?>
         </div>
     </div>
-    <script src="./../public/script.js"></script>
+    <script src="<?= $basePath ?>/public/script.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <?php
-
+include __DIR__ . '/config.php'; 
 use App\AuthManager;
 use App\AuditLogger;
 use App\RateLimiter; 
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $check['status'] === 'OK') {
         // SUCESSO: Reseta as falhas e avança
         $limiter->resetAttempts(); 
         unset($_SESSION['csrf_token']);
-        header('Location: /dashboard');
+        header("Location: {$basePath}/dashboard");
         exit;
         
     } else {
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $check['status'] === 'OK') {
 <head>
     <meta charset="UTF-8">
     <title>Login Seguro</title>
-    <link rel="stylesheet" href="/public/login_style.css" />
+    <link rel="stylesheet" href="<?= $basePath ?>/public/login_style.css" />
 </head>
 
 <body>

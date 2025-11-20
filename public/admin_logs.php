@@ -27,8 +27,8 @@ $stats = $logger->getStats();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logs de Auditoria do Sistema</title>
-    <link rel="stylesheet" href="/public/admin_style.css">
-    <link rel="stylesheet" href="/public/style_dashboard.css">
+    <link rel="stylesheet" href="<?= $basePath ?>/public/admin_style.css">
+    <link rel="stylesheet" href="<?= $basePath ?>/public/style_dashboard.css">
 </head>
 <body>
 
@@ -167,7 +167,7 @@ $stats = $logger->getStats();
     <?php endif; ?>
 
     <div style="text-align: right; margin-top: 20px;">
-        <a href="logout.php" style="color: #ff6b6b; text-decoration: none; font-weight: bold;">
+        <a href="<?= $basePath ?>/logout" style="color: #ff6b6b; text-decoration: none; font-weight: bold;">
             🚪 Sair do Sistema
         </a>
     </div>

@@ -24,3 +24,8 @@ ini_set('session.use_strict_mode', 1);
 // Charset padrão
 ini_set('default_charset', 'UTF-8');
 mb_internal_encoding('UTF-8');
+
+// Caminho base da aplicação (remove automaticamente o /index.php)
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$scriptDir = str_replace('/index.php', '', $scriptName);
+$basePath = rtrim($scriptDir, '/');

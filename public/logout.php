@@ -1,8 +1,11 @@
 <?php
 
+require __DIR__ . '/config.php';
+
 use App\AuthManager;
 
 $auth = new AuthManager();
 $auth->logout();
-header('Location: login.php');
+
+header("Location: {$basePath}/login");
 exit;
