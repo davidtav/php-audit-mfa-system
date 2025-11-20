@@ -1,3 +1,11 @@
+<div class="blur-toggle">
+    <label class="switch">
+        <input type="checkbox" id="toggleBlur">
+        <span class="slider"></span>
+    </label>
+    <span class="label-text">Ocultar dados sensíveis</span>
+</div>
+<br>
 <section class="user-list">
     <?php if (!empty($users)): ?>
         <table>
