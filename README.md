@@ -1,11 +1,11 @@
 # 🛡️ PHP Audit & MFA System — Secure Manager & Forensics
 
-![PHP](https://img.shields.io/badge/PHP-v8.2+-777BB4?logo=php&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-v8.4+-777BB4?logo=php&logoColor=white)
 ![Security](https://img.shields.io/badge/Security-MFA%20%2F%20TOTP-green?logo=google-authenticator&logoColor=white)
-![Architecture](https://img.shields.io/badge/Architecture-OOP%20%2F%20MVC-blue?logo=c&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-OOP-blue?logo=c&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-Um sistema de **gerenciamento de usuários** refatorado de um código legado (procedural) para uma arquitetura **Orientada a Objetos (OOP)** profissional.
+Um sistema de **gerenciamento de usuários** refatorado de um código procedural para uma arquitetura **Orientada a Objetos (OOP)** profissional.
 
 O foco deste projeto vai além do CRUD básico: é um estudo prático de **Engenharia de Software Segura** e **Cibersegurança**, implementando trilhas de auditoria forense, autenticação de dois fatores (MFA) e proteção de dados em arquivos JSON (Flat-file storage).
 
@@ -32,13 +32,13 @@ O projeto utiliza práticas modernas de desenvolvimento PHP (PSR-4) e biblioteca
 
 As funcionalidades foram desenhadas pensando em princípios de **Secure by Design**:
 
-- 🛡️ **Autenticação MFA:** Login administrativo protegido por senha (hash) + Token TOTP (Google Authenticator).
+- 🛡️ **Autenticação MFA com TOTP:** Login administrativo protegido por senha (hash) + Token TOTP (Google Authenticator).
 - 🕵️ **Logs de Auditoria Forense:** Registro detalhado de atividades (`audit.log`) contendo **IP**, **User-Agent**, **Timestamp** e Ação realizada. O AuditLogger foi integrado ao AuthManager para registrar todas as tentativas de login (SUCESSO/FALHA), IP e User-Agent, facilitando a identificação de ataques de força bruta ou enumeração de usuários.
-- 🆔 **UUIDs Seguros:** Substituição de IDs sequenciais (`1, 2, 3`) por UUIDs v4 (`e4ea...`) para evitar enumeração de usuários.
+- 🆔 **UUIDs v4 (Ramsey):** Substituição de IDs sequenciais (`1, 2, 3`) por UUIDs v4 (`e4ea...`) para evitar enumeração de usuários.
 - 🕵️ **Proteção contra CSRF:** Estrutura pronta para a implementação de Tokens Anti-CSRF em formulários
 - 🔒 **Proteção de Dados:** Bloqueio de acesso direto à pasta `/data` via `.htaccess`.
 - 🔐 **Variáveis de Ambiente:** Credenciais sensíveis gerenciadas via `.env` (fora do código fonte).
-
+- 🕵️ **Blur Sensitive** Data Toggle
 ---
 
 ## 📂 Estrutura do Projeto
@@ -49,10 +49,16 @@ projeto/
 ├── public/         # 🌍 Raiz do servidor (Frontend, Assets)
 ├── src/            # 🧠 Lógica do Backend (Classes, Services)
 ├── vendor/         # 📦 Dependências (Composer)
+├── index.php       # 🧱 Front Controller
+├── .htaccess       # 🧱 configuração de roteamento
 └── .env            # 🔑 Segredos (Não versionado)
 ```
 ---
+# 🌍 Compatibilidade
 
+- Windows (XAMPP / WAMPP / Laragon)
+- Linux (Apache)
+---
 ## ⚙️ Instalação e Configuração Local
 🧰 1. Pré-requisitos
 Certifique-se de ter instalado:
@@ -81,7 +87,7 @@ cp .env.example .env
 ---
 
 ## 🚀 4. Setup Inicial (MFA)
-1. Inicie o servidor PHP apontando para a pasta pública:
+1. Inicie o servidor PHP apontando para o front controller na raiz do projeto:
 ```bash
 php -S localhost:8000 index.php
 ```
@@ -93,7 +99,7 @@ php -S localhost:8000 index.php
 ## 🖥️ 5. Acessar o Dashboard
 Acesse a área administrativa e faça login com seu usuário, senha e o código do app:
 ```bash
- http://localhost:8000/login.php
+ http://localhost:8000/login
 ```
 ---
 
